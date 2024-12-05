@@ -10,7 +10,16 @@ from app.tests.utils.event import create_random_event
 def test_create_event(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
-    data = {"title": "Foo", "description": "Fighters"}
+    data = {
+        "title": "Event1",
+        "description": "dummy event",
+        "start_datetime": "2027-12-05T10:07:15.15-05:00",
+        "end_datetime": "2027-12-05T19:07:15.157Z",
+        "location": "string",
+        "capacity": 6,
+        "organizer_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "status_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        }
     response = client.post(
         f"{settings.API_V1_STR}/events/",
         headers=superuser_token_headers,
@@ -21,7 +30,7 @@ def test_create_event(
     assert content["title"] == data["title"]
     assert content["description"] == data["description"]
     assert "id" in content
-    assert "owner_id" in content
+    assert "organizer_id" in content
 
 
 def test_read_event(
@@ -37,7 +46,7 @@ def test_read_event(
     assert content["title"] == event.title
     assert content["description"] == event.description
     assert content["id"] == str(event.id)
-    assert content["owner_id"] == str(event.owner_id)
+    assert content["organizer_id"] == str(event.organizer_id)
 
 
 def test_read_event_not_found(
@@ -94,7 +103,7 @@ def test_update_event(
     assert content["title"] == data["title"]
     assert content["description"] == data["description"]
     assert content["id"] == str(event.id)
-    assert content["owner_id"] == str(event.owner_id)
+    assert content["organizer_id"] == str(event.organizer_id)
 
 
 def test_update_event_not_found(

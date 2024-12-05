@@ -33,7 +33,6 @@ router = APIRouter(prefix="/users", tags=["users"])
     response_model=UsersPublic,
     summary="Lista todos los usuarios",
     response_description="Lista de todo los usuarios creados")
-)
 def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
     """
     Lista todos los usuarios.
@@ -181,7 +180,7 @@ def read_user_by_id(
 @router.patch(
     "/{user_id}",
     dependencies=[Depends(get_current_active_superuser)],
-    response_model=UserPublic,
+    response_model=UserPublic
 )
 def update_user(
     *,

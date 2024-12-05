@@ -11,3 +11,7 @@ alembic upgrade head
 
 # Create initial data in DB
 python app/initial_data.py
+
+
+# bootstrap --config app/schema.json
+# pgsync --config app/schema.json -d
