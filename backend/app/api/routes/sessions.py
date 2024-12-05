@@ -14,12 +14,14 @@ from app.schemas.utils import Message
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 
-@router.get("/", response_model=SessionssPublic)
+@router.get("/", response_model=SessionssPublic,
+            summary="Lista todos las sesiones",
+            response_description="Lista de todas las sesiones creadas")
 def read_sessionss(
     session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
 ) -> Any:
     """
-    Retrieve sessions.
+    Lista todas las sesiones
     """
 
     if current_user.is_superuser:
@@ -60,12 +62,20 @@ def read_sessions(session: SessionDep, current_user: CurrentUser, sessions_id: u
     return db_sessions
 
 
-@router.post("/", response_model=SessionsPublic)
+@router.post("/", response_model=SessionsPublic,
+    summary="Crea sesiones",
+    response_description="Id de la nueva sesión creada y id del evento")
 def create_sessions(
     *, session: SessionDep, current_user: CurrentUser, sessions_in: SessionsCreate
 ) -> Any:
     """
-    Create new sessions.
+    Crea una nueva sesión con la información:
+    - **title**: requerido
+    - **description**: opcional
+    - **start_datetime: requerido. Formato YYYY-MM-DD[T]HH:MM[:SS[.ffffff]][[±]HH[:]MM]
+    - **end_datetime: requerido. Formato YYYY-MM-DD[T]HH:MM[:SS[.ffffff]][[±]HH[:]MM]
+    - **capacity: requerido
+    - **event_id**: requerido
     """
     db_event = session.get(Event, sessions_in.event_id)
     if not current_user.is_superuser or (db_event.organizer_id != current_user.id):
@@ -78,9 +88,14 @@ def create_sessions(
     return sessions
 
 
-@router.patch('/{event_id}', response_model=SessionsPublic)
+@router.patch('/{event_id}', response_model=SessionsPublic,
+    summary="Actualiza los campos enviados de una sesión por id",
+    response_description="Id de la sesión modificado")
 def update_sessions(session: SessionDep, current_user: CurrentUser,
                     sessions_id: uuid.UUID, sessions_in: SessionsUpdate) -> Any:
+    """
+    Actualiza una sesión con la nueva información enviada.
+    """
 
     db_sessions = session.get(Sessions, sessions_id)
     if not db_sessions:
@@ -94,12 +109,13 @@ def update_sessions(session: SessionDep, current_user: CurrentUser,
     return db_event
 
 
-@router.delete("/{sessions_id}")
+@router.delete("/{sessions_id}",
+    summary="Elimina una sesión por id")
 def delete_sessions(
     session: SessionDep, current_user: CurrentUser, sessions_id: uuid.UUID
 ) -> Message:
     """
-    Delete a session.
+    Elimina una sesión
     """
     db_sessions = session.get(Sessions, sessions_id)
     if not db_sessions:
@@ -116,6 +132,9 @@ def delete_sessions(
 
 @router.post('/attend/{sessions_id}')
 async def add_user_to_event(session: SessionDep, current_user: CurrentUser, sessions_id: uuid.UUID):
+    """
+    Asigna al usuario actual a la sesión especificado a través del event_id.
+    """
     db_sessions = session.get(Sessions, sessions_id)
     db_sessions.attendees.append(current_user)
 

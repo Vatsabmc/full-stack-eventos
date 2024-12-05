@@ -31,10 +31,12 @@ router = APIRouter(prefix="/users", tags=["users"])
     "/",
     dependencies=[Depends(get_current_active_superuser)],
     response_model=UsersPublic,
+    summary="Lista todos los usuarios",
+    response_description="Lista de todo los usuarios creados")
 )
 def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
     """
-    Retrieve users.
+    Lista todos los usuarios.
     """
 
     count_statement = select(func.count()).select_from(User)
@@ -51,7 +53,10 @@ def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
 )
 def create_user(*, session: SessionDep, user_in: UserCreate) -> Any:
     """
-    Create new user.
+    Crea un nuevo usuario con la información:
+    - **email**: requerido
+    - **full_name**: opcional
+    - **password**: requerido
     """
     user = crud.get_user_by_email(session=session, email=user_in.email)
     if user:
@@ -142,7 +147,7 @@ def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
 @router.post("/signup", response_model=UserPublic)
 def register_user(session: SessionDep, user_in: UserRegister) -> Any:
     """
-    Create new user without the need to be logged in.
+    Registrar un nuevo usuario
     """
     user = crud.get_user_by_email(session=session, email=user_in.email)
     if user:
@@ -160,7 +165,7 @@ def read_user_by_id(
     user_id: uuid.UUID, session: SessionDep, current_user: CurrentUser
 ) -> Any:
     """
-    Get a specific user by id.
+    Listar a un usuario por id
     """
     user = session.get(User, user_id)
     if user == current_user:
@@ -185,7 +190,7 @@ def update_user(
     user_in: UserUpdate,
 ) -> Any:
     """
-    Update a user.
+    Actualizar alguno de los campos asociados al usuario
     """
 
     db_user = session.get(User, user_id)
@@ -210,7 +215,7 @@ def delete_user(
     session: SessionDep, current_user: CurrentUser, user_id: uuid.UUID
 ) -> Message:
     """
-    Delete a user.
+    Eliminar a un usuario
     """
     user = session.get(User, user_id)
     if not user:

@@ -11,12 +11,14 @@ from app.schemas.status import StatusCreate, StatusPublic, StatusesPublic
 router = APIRouter(prefix="/event_status", tags=["events"])
 
 
-@router.get("/", response_model=StatusesPublic)
+@router.get("/", response_model=StatusesPublic,
+    summary="Lista todos los estados de eventos",
+    response_description="Lista de todo los estados de eventos creados")
 def read_statuses(
     session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 10
 ) -> Any:
     """
-    Retrieve statuses.
+    Lista todos los estados de eventos existentes.
     """
 
     if current_user.is_superuser:
@@ -40,10 +42,12 @@ def read_statuses(
     return StatusesPublic(data=statuses, count=count)
 
 
-@router.get("/{id}", response_model=StatusPublic)
+@router.get("/{id}", response_model=StatusPublic,
+    summary="Lista un estado de evento por id",
+    response_description="Estado de evento filtrado por id")
 def read_status(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> Any:
     """
-    Get status by ID.
+    Devuelve el estado de evento asociado al id.
     """
     status = session.get(Status, id)
     if not status:
@@ -53,12 +57,15 @@ def read_status(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -
     return status
 
 
-@router.post("/", response_model=StatusPublic)
+@router.post("/", response_model=StatusPublic,
+    summary="Crea un nuevo estado de evento",
+    response_description="Id del nuevo estado creado.")
 def create_status(
     *, session: SessionDep, current_user: CurrentUser, status_in: StatusCreate
 ) -> Any:
     """
-    Create new status.
+    Crea un nuevo estado de evento con la información:
+    - **status**: nombre del estado. Debe ser unico
     """
     if current_user.is_superuser:
         status = Status.model_validate(status_in)
