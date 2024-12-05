@@ -4,15 +4,37 @@ from typing import Any
 from sqlmodel import Session, select
 
 from app.core.security import get_password_hash, verify_password
-from app.models import User
+from app.models import User, Event, Role, Status, Sessions
 from app.schemas.users import UserCreate, UserUpdate
-from app.models import Event
-from app.schemas.events import EventCreate
+from app.schemas.roles import RoleCreate
+from app.schemas.events import EventCreate, EventUpdate
+from app.schemas.sessions import SessionsCreate, SessionsUpdate
+from app.schemas.status import StatusCreate
 
 
-def create_user(*, session: Session, user_create: UserCreate) -> User:
+# C roles
+def create_role(*, session: Session, role_create: RoleCreate) -> Role:
+    db_obj = Role(role=role_create.role)
+    session.add(db_obj)
+    session.commit()
+    session.refresh(db_obj)
+    return db_obj
+
+
+# C status
+def create_status(*, session: Session, status_create: StatusCreate) -> Status:
+    db_obj = Status(status=status_create.status)
+    session.add(db_obj)
+    session.commit()
+    session.refresh(db_obj)
+    return db_obj
+
+
+# CRUD users
+def create_user(*, session: Session, user_create: UserCreate, role_id: uuid.UUID) -> User:
     db_obj = User.model_validate(
-        user_create, update={"hashed_password": get_password_hash(user_create.password)}
+        user_create, update={"hashed_password": get_password_hash(user_create.password),
+                             "role_id": role_id}
     )
     session.add(db_obj)
     session.commit()
@@ -49,9 +71,53 @@ def authenticate(*, session: Session, email: str, password: str) -> User | None:
     return db_user
 
 
-def create_event(*, session: Session, event_in: EventCreate, owner_id: uuid.UUID) -> Event:
-    db_event = Event.model_validate(event_in, update={"owner_id": owner_id})
+# CRUD events
+def create_event(*, session: Session, event_in: EventCreate,
+                 organizer_id: uuid.UUID, status_id: uuid.UUID) -> Event:
+    db_event = Event.model_validate(event_in, update={"organizer_id": organizer_id,
+                                                      "status_id": status_id})
     session.add(db_event)
     session.commit()
     session.refresh(db_event)
     return db_event
+
+
+def update_event(*, session: Session, db_event: Event, event_in: EventUpdate) -> Any:
+    event_data = event_in.model_dump(exclude_unset=True)
+    db_event.sqlmodel_update(event_data)
+    session.add(db_event)
+    session.commit()
+    session.refresh(db_event)
+    return db_event
+
+
+def add_attendee_event(*, session: Session, db_event: Event) -> Event:
+    session.add(db_event)
+    session.commit()
+    session.refresh(db_event)
+    return db_event
+
+
+# CRUD sessions
+def create_sessions(*, session: Session, sessions_in: SessionsCreate, event_id: uuid.UUID) -> Sessions:
+    db_sessions = Event.model_validate(sessions_in, update={"event_id": event_id})
+    session.add(db_sessions)
+    session.commit()
+    session.refresh(db_sessions)
+    return db_sessions
+
+
+def update_sessions(*, session: Session, db_sessions: Sessions, sessions_in: SessionsUpdate) -> Any:
+    event_data = sessions_in.model_dump(exclude_unset=True)
+    db_sessions.sqlmodel_update(event_data)
+    session.add(db_sessions)
+    session.commit()
+    session.refresh(db_sessions)
+    return db_sessions
+
+
+def add_attendee_sessions(*, session: Session, db_sessions: Sessions) -> Sessions:
+    session.add(db_sessions)
+    session.commit()
+    session.refresh(db_sessions)
+    return db_sessions
