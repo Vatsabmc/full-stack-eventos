@@ -2,7 +2,7 @@
 name = "app"
 version = "0.1.0"
 description = ""
-authors = ["Admin <admin@example.com>"]
+authors = ["Vatsaid Molano <vatsabmc@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -26,6 +26,7 @@ pydantic-settings = "^2.2.1"
 sentry-sdk = {extras = ["fastapi"], version = "^1.40.6"}
 pyjwt = "^2.8.0"
 redis = "^5.2.0"
+pgsync = "^3.3.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"

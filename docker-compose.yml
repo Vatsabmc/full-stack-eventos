@@ -2,6 +2,7 @@ services:
 
   db:
     image: postgres:12
+    # command: -c config_file=/etc/postgresql.conf
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -11,6 +12,7 @@ services:
       timeout: 10s
     volumes:
       - app-db-data:/var/lib/postgresql/data/pgdata
+      # - ./backend/postgresql.conf:/etc/postgresql.conf
     env_file:
       - .env
     environment:
@@ -19,46 +21,63 @@ services:
       - POSTGRES_USER=${POSTGRES_USER?Variable not set}
       - POSTGRES_DB=${POSTGRES_DB?Variable not set}
 
-  adminer:
-    image: adminer
-    restart: always
-    networks:
-      - traefik-public
-      - default
-    depends_on:
-      - db
+  elasticsearch:
+    image: elasticsearch:${ELASTICSEARCH_VERSION:-8.11.0}
+    hostname: elasticsearch
     environment:
-      - ADMINER_DESIGN=pepa-linha-dark
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=traefik-public
-      - traefik.constraint-label=traefik-public
-      - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-http.rule=Host(`adminer.${DOMAIN?Variable not set}`)
-      - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-http.entrypoints=http
-      - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-http.middlewares=https-redirect
-      - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-https.rule=Host(`adminer.${DOMAIN?Variable not set}`)
-      - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-https.entrypoints=https
-      - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-https.tls=true
-      - traefik.http.routers.${STACK_NAME?Variable not set}-adminer-https.tls.certresolver=le
-      - traefik.http.services.${STACK_NAME?Variable not set}-adminer.loadbalancer.server.port=8080
+      - ES_JAVA_OPTS=-Xms512m -Xmx1g      
+      - ES_SERVER=elasticsearch
+      - ES_PORT=${ES_PORT?Variable not set}
+      - ES_INDEX=${ES_INDEX?Variable not set}
+      - ES_USER=${ES_USER?Variable not set}
+      - ES_PASSWORD=${ES_PASSWORD?Variable not set}
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - ./backend/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./backend/elasticsearch/snapshots:/usr/share/elasticsearch/snapshots
+    env_file:
+      - .env
 
+  redis:
+    image: redis:7
+    command: redis-server --requirepass ${RD_PASSWORD}
+    env_file:
+      - .env
+    environment:
+      - RD_SERVER=redis
+      - RD_PORT=${RD_PORT?Variable not set}
+      - RD_PASSWORD=${RD_PASSWORD?Variable not set}
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli ping -a ${RD_PASSWORD}" ]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+
+    restart: on-failure
+  
   prestart:
     image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
     build:
       context: ./backend
     networks:
-      - traefik-public
       - default
     depends_on:
       db:
         condition: service_healthy
         restart: true
+      redis:
+        condition: service_healthy      
+      elasticsearch:
+        condition: service_healthy
     command: bash scripts/prestart.sh
     env_file:
       - .env
     environment:
       - DOMAIN=${DOMAIN}
-      - FRONTEND_HOST=${FRONTEND_HOST?Variable not set}
       - ENVIRONMENT=${ENVIRONMENT}
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS}
       - SECRET_KEY=${SECRET_KEY?Variable not set}
@@ -69,29 +88,45 @@ services:
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - EMAILS_FROM_EMAIL=${EMAILS_FROM_EMAIL}
       - POSTGRES_SERVER=db
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PORT=${POSTGRES_PORT?Variable not set}
+      - POSTGRES_DB=${POSTGRES_DB?Variable not set}
       - POSTGRES_USER=${POSTGRES_USER?Variable not set}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
-      - SENTRY_DSN=${SENTRY_DSN}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}      
+      - PG_HOST=${POSTGRES_SERVER?Variable not set}
+      - PG_USER=${POSTGRES_USER?Variable not set}
+      - PG_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
+      - SENTRY_DSN=${SENTRY_DSN}      
+      - RD_SERVER=${RD_SERVER?Variable not set}
+      - RD_PORT=${RD_PORT?Variable not set}
+      - RD_PASSWORD=${RD_PASSWORD?Variable not set}
+      - ES_SERVER=${ES_SERVER?Variable not set}
+      - ES_PORT=${ES_PORT?Variable not set}
+      - ES_INDEX=${ES_INDEX?Variable not set}
+      - ES_USER=${ES_USER?Variable not set}
+      - ES_PASSWORD=${ES_PASSWORD?Variable not set}
+      - ELASTICSEARCH_HOST=${ES_SERVER?Variable not set}
+      - ELASTICSEARCH_USER=${ES_USER?Variable not set}
+      - ELASTICSEARCH_PASSWORD=${ES_PASSWORD?Variable not set}
 
   backend:
     image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
     restart: always
     networks:
-      - traefik-public
       - default
     depends_on:
       db:
         condition: service_healthy
         restart: true
+      redis:
+        condition: service_healthy      
+      elasticsearch:
+        condition: service_healthy
       prestart:
         condition: service_completed_successfully
     env_file:
       - .env
     environment:
       - DOMAIN=${DOMAIN}
-      - FRONTEND_HOST=${FRONTEND_HOST?Variable not set}
       - ENVIRONMENT=${ENVIRONMENT}
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS}
       - SECRET_KEY=${SECRET_KEY?Variable not set}
@@ -102,11 +137,25 @@ services:
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - EMAILS_FROM_EMAIL=${EMAILS_FROM_EMAIL}
       - POSTGRES_SERVER=db
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PORT=${POSTGRES_PORT?Variable not set}
+      - POSTGRES_DB=${POSTGRES_DB?Variable not set}
       - POSTGRES_USER=${POSTGRES_USER?Variable not set}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
-      - SENTRY_DSN=${SENTRY_DSN}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}      
+      - PG_HOST=${POSTGRES_SERVER?Variable not set}
+      - PG_USER=${POSTGRES_USER?Variable not set}
+      - PG_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
+      - SENTRY_DSN=${SENTRY_DSN}      
+      - RD_SERVER=${RD_SERVER?Variable not set}
+      - RD_PORT=${RD_PORT?Variable not set}
+      - RD_PASSWORD=${RD_PASSWORD?Variable not set}
+      - ES_SERVER=${ES_SERVER?Variable not set}
+      - ES_PORT=${ES_PORT?Variable not set}
+      - ES_INDEX=${ES_INDEX?Variable not set}
+      - ES_USER=${ES_USER?Variable not set}
+      - ES_PASSWORD=${ES_PASSWORD?Variable not set}
+      - ELASTICSEARCH_HOST=${ES_SERVER?Variable not set}
+      - ELASTICSEARCH_USER=${ES_USER?Variable not set}
+      - ELASTICSEARCH_PASSWORD=${ES_PASSWORD?Variable not set}
 
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/utils/health-check/"]
@@ -116,56 +165,6 @@ services:
 
     build:
       context: ./backend
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=traefik-public
-      - traefik.constraint-label=traefik-public
-
-      - traefik.http.services.${STACK_NAME?Variable not set}-backend.loadbalancer.server.port=8000
-
-      - traefik.http.routers.${STACK_NAME?Variable not set}-backend-http.rule=Host(`api.${DOMAIN?Variable not set}`)
-      - traefik.http.routers.${STACK_NAME?Variable not set}-backend-http.entrypoints=http
-
-      - traefik.http.routers.${STACK_NAME?Variable not set}-backend-https.rule=Host(`api.${DOMAIN?Variable not set}`)
-      - traefik.http.routers.${STACK_NAME?Variable not set}-backend-https.entrypoints=https
-      - traefik.http.routers.${STACK_NAME?Variable not set}-backend-https.tls=true
-      - traefik.http.routers.${STACK_NAME?Variable not set}-backend-https.tls.certresolver=le
-
-      # Enable redirection for HTTP and HTTPS
-      - traefik.http.routers.${STACK_NAME?Variable not set}-backend-http.middlewares=https-redirect
-
-  frontend:
-    image: '${DOCKER_IMAGE_FRONTEND?Variable not set}:${TAG-latest}'
-    restart: always
-    networks:
-      - traefik-public
-      - default
-    build:
-      context: ./frontend
-      args:
-        - VITE_API_URL=https://api.${DOMAIN?Variable not set}
-        - NODE_ENV=production
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=traefik-public
-      - traefik.constraint-label=traefik-public
-
-      - traefik.http.services.${STACK_NAME?Variable not set}-frontend.loadbalancer.server.port=80
-
-      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.rule=Host(`dashboard.${DOMAIN?Variable not set}`)
-      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.entrypoints=http
-
-      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-https.rule=Host(`dashboard.${DOMAIN?Variable not set}`)
-      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-https.entrypoints=https
-      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-https.tls=true
-      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-https.tls.certresolver=le
-
-      # Enable redirection for HTTP and HTTPS
-      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.middlewares=https-redirect
+  
 volumes:
   app-db-data:
-
-networks:
-  traefik-public:
-    # Allow setting it to false for testing
-    external: true
