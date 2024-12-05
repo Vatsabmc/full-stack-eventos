@@ -1,0 +1,12 @@
+[
+    {
+        "database": "app",
+        "index": "app",
+        "nodes": {
+            "table": "events",
+            "schema": "public",
+            "columns": [
+            ]
+        }
+    }
+]

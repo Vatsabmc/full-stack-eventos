@@ -50,6 +50,17 @@ class Settings(BaseSettings):
 
     PROJECT_NAME: str
     SENTRY_DSN: HttpUrl | None = None
+
+    RD_SERVER: str
+    RD_PORT: int = 6379
+    RD_PASSWORD: str = ""
+
+    ES_SERVER: str
+    ES_PORT: int = 9200
+    ES_INDEX: str
+    ES_USER: str
+    ES_PASSWORD: str = ""
+
     POSTGRES_SERVER: str
     POSTGRES_PORT: int = 5432
     POSTGRES_USER: str
@@ -111,12 +122,16 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def _enforce_non_default_secrets(self) -> Self:
         self._check_default_secret("SECRET_KEY", self.SECRET_KEY)
-        self._check_default_secret("POSTGRES_PASSWORD", self.POSTGRES_PASSWORD)
+        self._check_default_secret("POSTGRES_PASSWORD", self.POSTGRES_PASSWORD)        
+        self._check_default_secret("RD_PASSWORD", self.POSTGRES_PASSWORD)
         self._check_default_secret(
             "FIRST_SUPERUSER_PASSWORD", self.FIRST_SUPERUSER_PASSWORD
         )
 
         return self
+
+    ROLES: list[str] | str
+    STATUSES: list[str] | str
 
 
 settings = Settings()  # type: ignore
