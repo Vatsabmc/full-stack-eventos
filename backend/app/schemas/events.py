@@ -18,7 +18,8 @@ class EventCreate(EventBase):
     capacity: int = Field(gt=5)
     attendee_count: int = Field(default=0, ge=0)
     organizer_id: uuid.UUID
-    status_id: uuid.UUID
+    status_id: uuid.UUID    
+    category_id: uuid.UUID
 
     @field_validator("end_datetime")
     @classmethod
@@ -44,6 +45,7 @@ class EventUpdate(EventBase):
     attendee_count: int | None = Field(ge=0)
     organizer_id: uuid.UUID | None
     status_id: uuid.UUID | None
+    category_id: uuid.UUID | None
 
 
 # Properties to return via API, id is always required

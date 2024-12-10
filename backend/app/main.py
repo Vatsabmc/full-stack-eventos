@@ -9,17 +9,6 @@ from app.core.config import settings
 
 description = """
 Mis Eventos permite administrar el ciclo de vida de un evento, desde su creación y configuración hasta la gestión de asistentes. 🚀
-
-## Items
-
-You can **read items**.
-
-## Users
-
-You will be able to:
-
-* **Create users** (_not implemented_).
-* **Read users** (_not implemented_).
 """
 tags_metadata = [
     {
@@ -35,7 +24,7 @@ tags_metadata = [
         "description": "Operaciones con eventos. Adicionalmente, permite añadir usuarios (asistentes) a eventos.",
     },
     {
-        "name": "sessions",
+        "name": "events|sessions",
         "description": "Operaciones con sesiones. Adicionalmente, permite añadir usuarios (asistentes) a sesiones.",
     },
     {

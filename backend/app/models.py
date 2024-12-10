@@ -7,6 +7,7 @@ from app.schemas.events import EventBase
 from app.schemas.roles import RoleBase
 from app.schemas.status import StatusBase
 from app.schemas.sessions import SessionsBase
+from app.schemas.categories import CategoryBase
 
 
 class EventAttendeeLink(SQLModel, table=True):
@@ -61,6 +62,14 @@ class Status(StatusBase, table=True):
     event: list["Event"] = Relationship(back_populates="status")
 
 
+class Category(CategoryBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    category: str = Field(unique=True, max_length=25)
+
+    # Establish a one-to-many relationship
+    event: list["Event"] = Relationship(back_populates="category")
+
+
 # Database model, database table inferred from class name
 class Event(EventBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -72,11 +81,13 @@ class Event(EventBase, table=True):
     capacity: int = Field(nullable=False)
     attendee_count: int = Field(nullable=False)
     organizer_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+    category_id: uuid.UUID = Field(foreign_key="category.id", nullable=False)
     status_id: uuid.UUID = Field(foreign_key="status.id", nullable=False)
 
     # Establish the back references
     organizer: User = Relationship(back_populates="organizer_of")
     status: Status = Relationship(back_populates="event")
+    category: Category = Relationship(back_populates="event")
 
     # Establish a one-to-many relationship
     sessions: list["Sessions"] = Relationship(back_populates="event")

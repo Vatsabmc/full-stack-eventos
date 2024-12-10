@@ -4,12 +4,13 @@ from typing import Any
 from sqlmodel import Session, select
 
 from app.core.security import get_password_hash, verify_password
-from app.models import User, Event, Role, Status, Sessions
+from app.models import User, Event, Role, Status, Category, Sessions
 from app.schemas.users import UserCreate, UserUpdate
 from app.schemas.roles import RoleCreate
 from app.schemas.events import EventCreate, EventUpdate
 from app.schemas.sessions import SessionsCreate, SessionsUpdate
 from app.schemas.status import StatusCreate
+from app.schemas.categories import CategoryCreate
 
 
 # C roles
@@ -24,6 +25,15 @@ def create_role(*, session: Session, role_create: RoleCreate) -> Role:
 # C status
 def create_status(*, session: Session, status_create: StatusCreate) -> Status:
     db_obj = Status(status=status_create.status)
+    session.add(db_obj)
+    session.commit()
+    session.refresh(db_obj)
+    return db_obj
+
+
+# C category
+def create_category(*, session: Session, category_create: CategoryCreate) -> Category:
+    db_obj = Category(category=category_create.category)
     session.add(db_obj)
     session.commit()
     session.refresh(db_obj)
@@ -73,9 +83,11 @@ def authenticate(*, session: Session, email: str, password: str) -> User | None:
 
 # CRUD events
 def create_event(*, session: Session, event_in: EventCreate,
-                 organizer_id: uuid.UUID, status_id: uuid.UUID) -> Event:
+                 organizer_id: uuid.UUID, status_id: uuid.UUID,
+                 category_id: uuid.UUID) -> Event:
     db_event = Event.model_validate(event_in, update={"organizer_id": organizer_id,
-                                                      "status_id": status_id})
+                                                      "status_id": status_id,
+                                                      "category_id": category_id})
     session.add(db_event)
     session.commit()
     session.refresh(db_event)
