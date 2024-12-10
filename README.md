@@ -13,7 +13,7 @@ asistentes.
     - ⚙️ [Pydantic](https://docs.pydantic.dev), usado por FastAPI, para validación de datos and administración de configuraciones.
     - 🔨 [Poetry](https://python-poetry.org) para la gestión de paquetes y dependencias de Python.
     - 💾 [PostgreSQL](https://www.postgresql.org) como base de datos SQL.
-    - 🔍 [Elasticsearch](https://www.elastic.co/elasticsearch) como motor de busqueda para la consulta de Eventos (No implementado).
+    - 🔍 [Elasticsearch](https://www.elastic.co/elasticsearch) como motor de busqueda para la consulta de Eventos.
     - 🚪 [GraphQL](https://graphql.org/), usado para la interacción entre la API y Elasticsearch (No implementado).
 - 🐋 [Docker Compose](https://www.docker.com) para desarrollo.
 - 🔒 Hashing de contraseñas por defecto.
@@ -68,7 +68,7 @@ Copie el contenido y uselo como contraseña/ clave secreta.
 
 ### Ejecución
 
-Inicie el entorno de desarrollo local con Docker Compose:
+Ubicado en el directorio principal, inicie el entorno de desarrollo local con Docker Compose:
 ```bash
 docker compose watch
 ```
@@ -93,7 +93,6 @@ Documentación del Backend: [backend/README.md](./backend/README.md).
 ## Trabajo futuro
 
 - Validar la capacidad de asistentes en eventos y sesiones
-- Integrar busqueda de eventos por Elasticsearch
 - Integrar sincronización de Elasticsearch con Postgres usando [PGSync](https://pgsync.com/)
 - Integrar funcionalidad para gestión de cache usando Redis (El entorno de Redis ya se encuentra añadido al stack de Docker Compose).
 - Integrar sistema de notificaciones

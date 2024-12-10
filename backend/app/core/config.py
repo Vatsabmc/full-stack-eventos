@@ -55,7 +55,7 @@ class Settings(BaseSettings):
     RD_PORT: int = 6379
     RD_PASSWORD: str = ""
 
-    ES_SERVER: str
+    ES_SERVER: str = "elasticsearch"
     ES_PORT: int = 9200
     ES_INDEX: str
     ES_USER: str
@@ -132,6 +132,7 @@ class Settings(BaseSettings):
 
     ROLES: list[str] | str
     STATUSES: list[str] | str
+    CATEGORIES: list[str] | str
 
 
 settings = Settings()  # type: ignore

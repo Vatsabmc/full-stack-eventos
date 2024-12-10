@@ -11,7 +11,7 @@
 
 ## Docker Compose
 
-Inicie el entorno de desarrollo local con Docker Compose:
+Ubicado en el directorio principal, inicie el entorno de desarrollo local con Docker Compose:
 ```bash
 docker compose watch
 ```
@@ -61,7 +61,7 @@ $ docker compose exec backend bash
 * Luego de modificar un modelo, dentro del contenedor, crear una revisión:
 
 ```console
-$ alembic revision --autogenerate -m "Add column last_name to User model"
+$ alembic revision --autogenerate -m "Add table"
 ```
 
 * Después de crear la revisión, ejecutar la migración en la base de datos (esto es lo que realmente cambiará la base de datos):
