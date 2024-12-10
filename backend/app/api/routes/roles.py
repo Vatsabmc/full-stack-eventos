@@ -8,7 +8,7 @@ from app.api.deps import CurrentUser, SessionDep
 from app.models import Role
 from app.schemas.roles import RoleCreate, RolePublic, RolesPublic
 
-router = APIRouter(prefix="/roles", tags=["users"])
+router = APIRouter(prefix="/roles", tags=["users|roles"])
 
 
 @router.get("/", response_model=RolesPublic,

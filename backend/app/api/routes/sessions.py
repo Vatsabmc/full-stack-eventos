@@ -11,7 +11,7 @@ from app.schemas.sessions import (
     SessionsCreate, SessionsPublic, SessionssPublic, SessionsUpdate)
 from app.schemas.utils import Message
 
-router = APIRouter(prefix="/sessions", tags=["sessions"])
+router = APIRouter(prefix="/sessions", tags=["events|sessions"])
 
 
 @router.get("/", response_model=SessionssPublic,

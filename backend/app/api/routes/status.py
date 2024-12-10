@@ -8,7 +8,7 @@ from app.api.deps import CurrentUser, SessionDep
 from app.models import Status
 from app.schemas.status import StatusCreate, StatusPublic, StatusesPublic
 
-router = APIRouter(prefix="/event_status", tags=["events"])
+router = APIRouter(prefix="/event_status", tags=["events|status"])
 
 
 @router.get("/", response_model=StatusesPublic,
