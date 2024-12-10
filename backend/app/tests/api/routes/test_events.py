@@ -5,11 +5,17 @@ from sqlmodel import Session
 
 from app.core.config import settings
 from app.tests.utils.event import create_random_event
+from app.tests.utils.status import create_random_status
+from app.tests.utils.category import create_random_category
+from app.tests.utils.user import create_random_user
 
 
 def test_create_event(
     client: TestClient, superuser_token_headers: dict[str, str]
 ) -> None:
+    organizer = create_random_user()
+    status = create_random_status()
+    category = create_random_category()
     data = {
         "title": "Event1",
         "description": "dummy event",
@@ -17,8 +23,9 @@ def test_create_event(
         "end_datetime": "2027-12-05T19:07:15.157Z",
         "location": "string",
         "capacity": 6,
-        "organizer_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        "status_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        "organizer_id": organizer.id,
+        "status_id": status.id,
+        "category_id": category.id
         }
     response = client.post(
         f"{settings.API_V1_STR}/events/",

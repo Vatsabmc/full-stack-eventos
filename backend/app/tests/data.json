@@ -1,0 +1,92 @@
+[
+  {
+    "title": "Concierto1",
+    "description": "Concierto Vallenato",
+    "start_datetime": "2025-03-01",
+    "end_datetime": "2025-03-01",
+    "category": "Conciertos",
+    "location": "Venue1",
+    "capacity": "100"
+  },
+  {
+    "title": "Concierto2",
+    "description": "Concierto Ranchera",
+    "start_datetime": "2025-02-01",
+    "end_datetime": "2025-02-02",
+    "category": "Conciertos",
+    "location": "Venue1",
+    "capacity": "100"
+  },
+  {
+    "title": "Concierto3",
+    "description": "Concierto Rock",
+    "start_datetime": "2024-11-01",
+    "end_datetime": "2024-11-04",
+    "category": "Conciertos",
+    "location": "Venue2",
+    "capacity": "100"
+  },
+  {
+    "title": "Clasico de futbol",
+    "description": "Clasico equipo A equipo B",
+    "start_datetime": "2024-11-17",
+    "end_datetime": "2024-11-17",
+    "category": "Deportes",
+    "location": "Venue3",
+    "capacity": "100"
+  },
+  {
+    "title": "Partido de futbol",
+    "description": "Partido equipo A equipo B",
+    "start_datetime": "2024-12-15",
+    "end_datetime": "2024-12-15",
+    "category": "Deportes",
+    "location": "Venue3",
+    "capacity": "100"
+  },
+  {
+    "title": "Obra el Exorcista",
+    "description": "Adaptacion de la literatura",
+    "start_datetime": "2025-02-01",
+    "end_datetime": "2025-02-20",
+    "category": "Teatro",
+    "location": "Venue4",
+    "capacity": "100"
+  },
+  {
+    "title": "Obra Legalmente Rubia",
+    "description": "Adaptacion del cine",
+    "start_datetime": "2025-01-15",
+    "end_datetime": "2025-01-22",
+    "category": "Teatro", 
+    "location": "Venue4",
+    "capacity": "100"
+  },
+  {
+    "title": "Congreso de Ingenieria",
+    "description": "Congreso de ingenieria",
+    "start_datetime": "2025-03-11",
+    "end_datetime": "2025-03-13",
+    "category": "Seminarios y Congresos",
+    "location": "Venue4",
+    "capacity": "100"
+  },
+  {
+    "title": "Seminario de antropologia",
+    "description": "Seminario de ntropologia, sociologia y arqueologia",
+    "start_datetime": "2025-05-15",
+    "end_datetime": "2025-05-22",
+    "category": "Seminarios y Congresos",
+    "location": "Venue5",
+    "capacity": "100"
+  },
+  {
+    "title": "Exposicion sobre el cuerpo humano",
+    "description": "Exposicion realista",
+    "start_datetime": "2025-01-15",
+    "end_datetime": "2025-01-22",
+    "category": "Exposiciones",
+    "location": "Venue5",
+    "capacity": "100"
+  }
+]

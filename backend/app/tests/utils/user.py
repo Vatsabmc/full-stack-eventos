@@ -6,6 +6,7 @@ from app.core.config import settings
 from app.models import User
 from app.schemas.users import UserCreate, UserUpdate
 from app.tests.utils.utils import random_email, random_lower_string
+from app.tests.utils.role import create_random_role
 
 
 def user_authentication_headers(
@@ -23,8 +24,9 @@ def user_authentication_headers(
 def create_random_user(db: Session) -> User:
     email = random_email()
     password = random_lower_string()
+    role = create_random_role()
     user_in = UserCreate(email=email, password=password)
-    user = crud.create_user(session=db, user_create=user_in)
+    user = crud.create_user(session=db, user_create=user_in, role_id=role.id)
     return user
 
 
@@ -39,8 +41,9 @@ def authentication_token_from_email(
     password = random_lower_string()
     user = crud.get_user_by_email(session=db, email=email)
     if not user:
+        role_id = create_random_role()
         user_in_create = UserCreate(email=email, password=password)
-        user = crud.create_user(session=db, user_create=user_in_create)
+        user = crud.create_user(session=db, user_create=user_in_create, role_id=role_id.id)
     else:
         user_in_update = UserUpdate(password=password)
         if not user.id:
